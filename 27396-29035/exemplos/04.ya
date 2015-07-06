@@ -1,0 +1,23 @@
+//argumentos da declaracao de funcoes (declaracoes) e chamada (exp)
+f(a, {1,2,3}, true);
+
+f(a :int,  b : bool) : int {
+	 
+	a=b;
+	return b;
+};
+
+f(b):int{
+	tete= 3;
+	return tete;
+};
+
+f(b, c):int{
+	a = f(a,b);
+	tete= 3;
+	return tete;
+};
+
+f(a: int );
+
+f(a: int, b :int );

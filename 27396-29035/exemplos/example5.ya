@@ -1,0 +1,18 @@
+f (n:int ): int {
+	a,b : int;
+
+	if n==1 then {
+		b=1;
+	}
+	else {
+		a = n - 1;
+		b = n * f(a);
+	};
+
+	return b;
+};
+
+main() : void {
+n : string = "Print nao existe";
+	//print (f(3));
+};

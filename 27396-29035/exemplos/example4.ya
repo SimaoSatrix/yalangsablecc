@@ -1,0 +1,19 @@
+f (n: int) : int {
+	if n<0 then {
+	n= 3;
+		//print ("Negativo");
+	}
+	else {
+		n = 4;
+		//print ("Positivo");
+	};
+//exemplo do professor nao continha return
+
+	return n;
+
+};
+
+main () : void {
+	f(1);
+	f(-1);
+};

@@ -1,0 +1,20 @@
+//casos de return presente em funções 
+
+f(a, b) : int {
+	a = 5;
+	return a;
+};
+
+f() : void {
+	a = tete;	
+};
+
+g() : int {
+	a = 4;
+};
+
+g() : void {
+	b= 3;
+	return b;
+};
+

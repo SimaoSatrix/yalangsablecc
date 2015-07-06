@@ -1,0 +1,12 @@
+//afectacoes
+
+a,d,e,f : int;
+
+a = 3 + 4.5;
+d = 5 + a;
+e = f = f(b) + c; 
+
+f(b: int) : int{
+	tete : int = 3;
+	return tete;
+};

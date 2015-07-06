@@ -1,0 +1,25 @@
+//todos os casos que podem tomar o lugar de variaveis em declaracoes
+
+f() : int;
+f(a) : int;
+
+//true, "tete", {1,2,3}, 4.5, 1, f(), f(i) : int =4;
+
+f() : int {
+	i : float = {"tete",4.5,4.6};
+	a = f();
+};
+
+g() : int {
+	i : float = {"tete",4.5,4.6};
+	f() : int = 4;
+};
+
+a: int = g();
+
+//true : bool = false;
+//{a,b,c}: int[20]= {4,5,6};
+//"tete" : string = "cucu";
+//1 : int = 2;
+//4.5 : float = 5.4;
+

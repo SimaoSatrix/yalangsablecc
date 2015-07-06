@@ -1,0 +1,424 @@
+/*
+ * Simão Ramos(29035) João Martins(27396) Compiladores 2014-2015
+ */
+Package compiladores2;
+
+Helpers
+
+    digit = ['0' .. '9'];
+    letter = [['A' .. 'Z'] + ['a' .. 'z']];
+    underscore= '_';
+    tab = 9;
+    cr = 13;
+    lf = 10;
+    eol = cr lf | cr | lf;
+
+
+    all = [0 .. 0xFFFF]; 
+    any_char = [all - [cr + lf]];
+    
+    ascii_char =[32 .. 127];
+
+    blank = (' ' | tab | eol)+;
+    number = digit+;
+    str = ascii_char+;
+    
+    l_par = '(';
+    r_par = ')';
+    l_brac = '{';
+    r_brac = '}';
+    l_sbrac = '[';
+    r_sbrac = ']';
+    coma = '"';
+    semi = ';';
+    dot = '.';  
+    igu = '=';
+    col = ',';
+    ddot = ':';
+    excl = '!';
+    menor = '<';
+    maior = '>';
+    plus = '+';
+    minus = '-';
+    mult = '*';
+    div = '/';
+    pot = '^';
+
+    
+    comenini = '//';
+    comenhelper = comenini+;
+
+    true='true';
+    false='false';
+
+Tokens
+    
+    l_par = l_par;
+    r_par = r_par;
+    l_brac = l_brac;
+    r_brac = r_brac;
+    l_sbrac = l_sbrac;
+    r_sbrac = r_sbrac;
+    coma = coma;
+    semi = semi;
+    dot = dot;  
+    igu = igu;
+    col = col;
+    ddot = ddot;
+    excl = excl;
+    menor = menor;
+    maior = maior;
+    plus = plus;
+    minus = minus;
+    mult = mult;
+    div = div;
+    pot = pot;
+
+    true=true;
+    false=false;
+
+
+    blank = blank;
+
+    equ = igu+igu;
+    menequ = menor+igu;
+    maiequ = maior+igu;
+    dif = excl+igu;
+    
+    mod='mod';
+    and='and';
+    or='or';
+    not='not';
+
+    int='int';
+    float='float';
+    string='string';
+    bool='bool';
+    void='void';
+
+    define='define';
+    if ='if';
+    then = 'then';
+    else= 'else';
+    while= 'while';
+    do='do';
+    
+    return='return';
+    break='break';
+    next='next';
+    
+    
+
+    variavel = (letter | underscore) (letter | underscore |number)*;
+    integer = number;
+    float_prod = (number*  dot  number+ )|(number*  dot  number+ (('E' | 'e')('+' | '-') number+)) ;
+    string_prod = coma  str  coma;
+
+    comment = comenhelper any_char* eol;
+    
+
+
+Ignored Tokens
+    
+    comment,
+    blank;
+    
+
+Productions
+
+    programa           = inst_list separator          {-> New programa ([inst_list.inst])}
+                      ;
+
+    inst_list   {-> inst*} =
+                        {list}    inst_list separator inst {-> [inst_list.inst, inst.inst] }
+                      | {single}  inst               {-> [inst.inst] }
+                      ;
+    //tipo de instrições mais abstractas
+    inst        {-> inst} =
+                        {declaracao} decl            {-> New inst.declaracao(decl.decl)}
+                      | {afectacao} afect            {-> New inst.afectacao(afect.afect) }
+                      | {funcao} func                {-> New inst.funcao(func.func) }
+                      | {condicional} condicional    {-> New inst.condicional(condicional.cond)}
+                      | {ciclo} ciclo                {-> New inst.ciclo(ciclo.ciclo)}
+                      | {break} break                {-> New inst.break (break)}
+                      | {next} next                  {-> New inst.next  (next)}
+                      | {chamada_stmt} chamada       {-> New inst.chamada_stmt (chamada.chamada)}
+                      ;
+    
+   
+    //declaracoes
+    decl        {-> decl} =
+                        {define}    define atri_define         {-> New decl.define (define , atri_define.decl)}
+                      | {cinici}    atri igu exp           {-> New decl.cinici (atri.decl, exp.exp)}
+                      | {sinici}    atri                   {-> atri.decl}
+                      ;
+
+    //atribuicao das declaracoes e novos tipos
+    atri        {-> decl} =
+                        {enumerada} list_exp ddot tipo_criado {-> New decl.enumerada (list_exp.chamada, tipo_criado.tipo)}
+                      ;
+
+    atri_define {-> decl} =
+                        {novo_tipo} tipo_criado tipo   {-> New decl.novo_tipo (tipo_criado.tipo, tipo.tipo)}
+                        ;
+    //afectacao
+    afect       {-> afect} =
+                        {variada} variavel_afectada igu exp {-> New afect.variada (variavel_afectada.afect, exp.exp)}
+                      ;
+
+    //inicializacao da funcao                  
+    func        {-> func} =
+                        {funcnormal} atri l_brac corpo r_brac {-> New func.funcnormal (atri.decl, corpo.corpo)}
+                        ;
+
+    // corpo de funções,ciclos e condicionais
+    corpo {-> corpo} =
+                        {svoid} corpo_simples retorno semi {->New corpo.svoid(corpo_simples.corpo, retorno.corpo)} 
+                      | {cvoid} corpo_simples     {-> corpo_simples.corpo}
+                       ;
+    corpo_simples {-> corpo} =
+                        {standard} inst_lista_secundaria semi {-> inst_lista_secundaria.corpo}
+                       ;
+                       
+    inst_lista_secundaria{-> corpo} =
+                        {lista_instrucoes_sec} inst_lista_secundaria semi inst {->New corpo.lista_instrucoes_sec(inst_lista_secundaria.corpo, inst)}
+                       |{final_inst} inst   {-> New corpo.final_inst(inst.inst)}
+                       ;
+    retorno {-> corpo}=
+                       {retorno_id} return exp {-> New corpo.retorno_id (return,exp.exp)}
+                       ;
+    //if..else
+    condicional {-> cond}=
+                        {duascondicoes} condicao else l_brac corpo_simples r_brac {-> New cond.duascondicoes (condicao.cond,corpo_simples.corpo)}
+                      | {umacondicao} condicao       {-> condicao.cond}
+                      ;
+
+    condicao {-> cond} =
+                        {normal} if bool_prod_core then l_brac corpo_simples r_brac {-> New cond.normal (bool_prod_core.exp,corpo_simples.corpo)}
+                      ;
+    
+    //ciclo
+    ciclo {-> ciclo} =
+                        {ciclo_normal} while bool_prod_core do l_brac corpo_simples r_brac  {-> New ciclo.ciclo_normal (bool_prod_core.exp, corpo_simples.corpo)} 
+                      ;
+    
+    //expressoes para inicializacao e aritmetica sem bool e chamada
+    exp            {-> exp} =
+                        {nominal} string_prod         {-> New exp.nominal (string_prod)}   
+                      | {ini_array} array             {-> array.exp}
+                      | {booleana} bool_prod_core     {-> bool_prod_core.exp}
+                      ;
+   
+
+ // chamada de funçoes
+    chamada {-> chamada} =
+                        {chamada_funcao_comp} variavel l_par list_args r_par {-> New chamada.chamada_funcao_comp (variavel, list_args.chamada)}
+                      | {chamada_funcao}  variavel l_par r_par    {-> New chamada.chamada_funcao(variavel)}
+                      ;
+    
+    list_args {-> chamada} =
+                        {list_ex} list_exp                   {->list_exp.chamada}
+                      | {list_dec} list_decl                  {-> list_decl.chamada}
+                      ;
+
+    list_exp {-> chamada} = 
+                        {varias_exp} list_exp col exp          {-> New chamada.varias_exp (list_exp.chamada, exp.exp)}
+                        |{uni_exp} exp                         {-> New chamada.uni_exp (exp.exp)}
+                        ;
+    list_decl {-> chamada} =
+                        {varias_decl} list_decl col atri          {-> New chamada.varias_decl (list_decl.chamada,atri.decl)}
+                       |{uni_decl} atri                          {-> New chamada.uni_decl (atri.decl)}
+                       ;
+
+    ///aritmetica
+    aritm            {-> exp} =  
+                        {plus}    aritm plus factor   {-> New exp.plus (aritm.exp, factor.exp) }
+                      | {minus}   aritm minus factor  {-> New exp.minus (aritm.exp, factor.exp) }
+                      | {neg}     minus factor         {-> New exp.neg (factor.exp)}
+                      | {factor}  factor               {-> factor.exp }
+                      ;
+
+    
+
+    factor            {-> exp} =
+                        {mult}    factor mult expo  {-> New exp.mult (factor.exp, expo.exp) }
+                      | {div}     factor div expo   {-> New exp.div (factor.exp, expo.exp) }
+                      | {mod}     factor mod expo   {-> New exp.mod (factor.exp, expo.exp)}
+                      | {expo}    expo              {-> expo.exp }
+                      ;
+
+    expo              {-> exp} =
+                        {pot}     expo pot term     {-> New exp.pot (expo.exp, term.exp)}
+                      | {term}    term              {-> term.exp }
+                      ;
+
+    term              {-> exp} =
+                        {int}     integer               {-> New exp.int(integer) }
+                      | {float}   float_prod             {-> New exp.float(float_prod)}
+                      | {var_chamada} chamada               {-> New exp.var_chamada (chamada.chamada)}
+                      | {variavel}  variavel                  {-> New exp.variavel (variavel)}
+                      | {exp}     l_par aritm r_par   {-> aritm.exp }
+                      ;
+    //produção booleana
+    bool_prod_core {-> exp}=
+                        {and} bool_prod_core and bool_prod_num  {-> New exp.and (bool_prod_core.exp,bool_prod_num.exp)}
+                       |{or} bool_prod_core or bool_prod_num    {-> New exp.or (bool_prod_core.exp,bool_prod_num.exp)}
+                       |{not} not bool_prod_num                 {->New exp.not (bool_prod_num.exp)}
+                       |{boolprod} bool_prod_num                 {-> bool_prod_num.exp}
+                       ;
+
+    bool_prod_num {-> exp}=
+                        {iguigual} bool_prod_num equ aritm    {-> New exp.iguigual (bool_prod_num.exp, aritm.exp)}
+                       |{menor} bool_prod_num menor aritm       {-> New exp.menor (bool_prod_num.exp, aritm.exp)}
+                       |{maior} bool_prod_num maior aritm       {-> New exp.maior (bool_prod_num.exp, aritm.exp)}
+                       |{menigu} bool_prod_num menequ aritm     {-> New exp.menigu (bool_prod_num.exp, aritm.exp)}
+                       |{maigu} bool_prod_num maiequ aritm      {-> New exp.maigu  (bool_prod_num.exp, aritm.exp)}
+                       |{dif} bool_prod_num dif aritm          {-> New exp.dif (bool_prod_num.exp, aritm.exp)}
+                       |{bool_prim} bool_primitivo      {-> bool_primitivo.exp}
+                       ;
+                        
+    bool_primitivo {-> exp}=
+                       {true} true                     {-> New exp.true(true)}
+                       |{false} false                   {-> New exp.false(false)}
+                       |{bool_simples} aritm            {-> New exp.bool_simples (aritm.exp)}
+                       ;
+
+    //array inicialização
+    array {-> exp} =
+                        {ini_array} l_brac list_exp r_brac {-> New exp.ini_array (list_exp.chamada)}
+                        ;
+    //tratamento das variaveis
+    variavel_afectada {-> afect} =
+                        {multipla} variavel_afectada igu id_afectado {-> New afect.multipla (variavel_afectada.afect, id_afectado.afect)}
+                      | {sing} id_afectado                           {-> id_afectado.afect}
+                      ;
+    
+    id_afectado      {-> afect}=
+                        {id_array} variavel l_sbrac integer r_sbrac  {-> New afect.id_array (variavel,integer)}
+                      | {id_array2} variavel l_sbrac indice r_sbrac {-> New afect.id_array2 (variavel,indice.afect)}
+                      | {id_simples} variavel                               {-> New afect.id_simples (variavel)}
+                      ;
+    indice           {-> afect}=
+                        {index} variavel igu integer                 {-> New afect.index(variavel,integer)}
+                     ;
+
+    //tipos primitivos excepto void
+    tipo              {-> tipo} =
+                        {composto} tipo_simples l_sbrac integer r_sbrac {-> New tipo.composto (tipo_simples.tipo,integer)}
+                      | {simples} tipo_simples                         {-> tipo_simples.tipo}
+                      ; 
+
+    tipo_criado       {-> tipo} =
+                        {indefinida} term     {-> New tipo.indefinida (term.exp)}
+                      | {simples_aux} tipo {-> tipo.tipo}
+                      ;
+                           
+
+    tipo_simples  {-> tipo} =
+                        {int_tipo} int              {-> New tipo.int_tipo (int)}
+                      | {float_tipo} float          {-> New tipo.float_tipo (float)}
+                      | {string_tipo} string        {-> New tipo.string_tipo (string)}
+                      | {bool_tipo} bool            {-> New tipo.bool_tipo (bool)}
+                      | {void} void                 {-> New tipo.void (void) }
+                      ;
+                        
+    separator  {-> } =
+                        {semicolon} semi {-> }
+                      ;
+                      
+
+Abstract Syntax Tree
+
+    programa           = inst+
+                      ;
+
+    inst               =
+                        {declaracao} decl |
+                        {afectacao} afect |
+                        {funcao} func      |          
+                        {condicional} cond  |
+                        {ciclo} ciclo        |
+                        {chamada_stmt} chamada |
+                        {break}    break |
+                        {next}     next ;
+
+    decl               =
+                        {define}  [l]:define [r]:decl |
+                        {cinici} [l]:decl [r]:exp |
+                        {enumerada} [l]:chamada [r]:tipo |
+                        {novo_tipo} [l]:tipo [r]:tipo;
+
+    
+    
+    afect =
+                        {variada} [l]:afect [r]:exp |
+                        {multipla} [l]:afect [r]:afect |
+                        {id_array} [l]:variavel [r]:integer |
+                        {id_array2} [l]:variavel [r]:afect |
+                        {id_simples} variavel |
+                        {index} [l]:variavel [r]:integer ;
+
+    func =
+                        {funcnormal} [l]:decl [r]:corpo 
+                         ;
+                        
+
+    corpo =
+                        {svoid} [l]:corpo [r]:corpo |
+                        {lista_instrucoes_sec} [l]: corpo [r]: inst |
+                        {final_inst} inst |
+                        {retorno_id} [l]:return [r]:exp ;
+
+    cond =
+                        {duascondicoes} [l]:cond [r]:corpo |
+                        {normal} [l]:exp [r]:corpo ;
+
+    ciclo =
+                        {ciclo_normal} [l]:exp [r]:corpo ;
+    
+    exp=
+                        {nominal} string_prod |
+                        {chamada} chamada |
+                        {plus} [l]:exp [r]:exp |
+                        {minus} [l]:exp [r]:exp |
+                        {neg} exp |
+                        {mult}     [l]:exp  [r]:exp |
+                        {div}      [l]:exp  [r]:exp |
+                        {mod} [l]:exp [r]:exp |
+                        {pot} [l]:exp [r]:exp |
+                        {int} integer |
+                        {float} float_prod |
+                        {var_chamada} chamada |
+                        {and} [l]:exp [r]:exp |
+                        {or} [l]:exp [r]:exp |
+                        {not} exp |
+                        {iguigual} [l]:exp [r]:exp |
+                        {menor} [l]:exp [r]:exp |
+                        {maior} [l]:exp [r]:exp |
+                        {menigu} [l]:exp [r]:exp |
+                        {maigu} [l]:exp [r]:exp |
+                        {dif} [l]:exp [r]:exp |
+                        {true} true |
+                        {false} false |
+                        {bool_simples} exp |
+                        {ini_array} chamada |
+                        {variavel} variavel;
+
+    chamada =
+                        {chamada_funcao_comp}    [l]:variavel  [r]:chamada |
+                        {chamada_funcao}  variavel  |
+                        {varias_exp} [l]:chamada [r]:exp |
+                        {uni_exp} exp |
+                        {varias_decl} [l]:chamada [r]:decl |
+                        {uni_decl} decl|
+                        ;
+               
+    tipo=                    
+                        {composto} [l]:tipo [r]:integer |
+                        {int_tipo} int |
+                        {float_tipo} float |
+                        {string_tipo} string |
+                        {bool_tipo} bool |
+                        {void} void |
+                        {indefinida} exp
+                      ;

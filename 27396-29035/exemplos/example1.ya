@@ -1,0 +1,16 @@
+a : int = 4;
+b : string = "ola";
+
+f (b: int) : void {
+  //print(b);
+  c :int = 4;
+};
+
+//tete
+main () : void {
+  a : bool = true;
+
+  if a then { 
+    b = "hello, world";
+  };
+};

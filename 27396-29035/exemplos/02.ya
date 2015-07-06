@@ -1,0 +1,57 @@
+//todos os casos para intrucoes que deviam ou nao estar dentro de funções 
+
+break;
+next;
+
+while a do {
+  i = i+1;
+};
+
+if tete then {
+   i = 4;
+};
+
+f(): int {
+  
+break;
+next;
+
+while a do {
+  i = i+1;
+};
+
+if tete then {
+   i = 4;
+};
+
+
+};
+
+f(): int {
+  
+
+
+while a do {
+  
+  i = i+1;
+  break;
+  next;
+};
+
+if tete then {
+while b do {
+  if tete then {
+   i = 4;
+};
+    t = 2+2;
+  };
+   i = 4;
+};
+
+};
+
+f() :int{
+  g(): int {
+    i :int =4;
+  };
+};
